@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
@@ -8,11 +9,17 @@
 
     <div class="container mt-5">
         <a href="/" class="btn btn-outline-light mb-3">← Back to Home</a>
+        <div class="mb-3">
+            <input type="text" id="goal-title" class="form-control form-control-lg bg-dark text-light border-secondary"
+                value="{{ goal.title }}" data-goal-id="{{ goal.id }}">
+        </div>
 
-        <h1 class="display-4">{{ goal.title }}</h1>
-        <p class="lead">{{ goal.description }}</p>
+        <div class="mb-3">
+            <textarea id="goal-description" class="form-control bg-dark text-light border-secondary" rows="4"
+                data-goal-id="{{ goal.id }}">{{ goal.description }}</textarea>
+        </div>
+
         <small class="text-muted">Created: {{ goal.created_at|date:"F j, Y – g:i A" }}</small>
-
         <hr>
 
         <h3 class="mb-3">📝 Journal Entries</h3>
@@ -36,5 +43,7 @@
         {% endif %}
     </div>
 
+    <script id="goal-data" type="application/json">{{ goal.id }}</script>
+    <script src="{% static 'core/goalAutoSave.js' %}"></script>        
 </body>
 </html>

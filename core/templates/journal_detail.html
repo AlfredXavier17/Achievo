@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
@@ -14,76 +15,10 @@
 
         <input type="text" id="journal-title" class="form-control mb-3 fs-3" value="{{ journal.title }}" placeholder="Untitled" />
         <small class="text-muted">{{ journal.created_at|date:"F j, Y – g:i A" }}</small>
-
         <hr>
-
         <textarea id="journal-content" class="form-control" rows="12" style="white-space: pre-wrap; line-height: 1.8;">{{ journal.content }}</textarea>
-        <small id="autosave-msg" class="text-muted mt-2 d-block" style="display: none;">Saving...</small>
     </div>
-
-    <script>
-        const journalId = {{ journal.id }};
-        const titleInput = document.getElementById('journal-title');
-        const contentTextarea = document.getElementById('journal-content');
-        const autosaveMsg = document.getElementById('autosave-msg');
-
-        let timeoutId;
-
-        function autosave() {
-            clearTimeout(timeoutId);
-            timeoutId = setTimeout(() => {
-                autosaveMsg.style.display = 'inline';
-                fetch(`/journals/${journalId}/autosave/`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCookie('csrftoken')
-                    },
-                    body: JSON.stringify({
-                        title: titleInput.value,
-                        content: contentTextarea.value
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    autosaveMsg.innerText = 'Saved ✅';
-                    setTimeout(() => autosaveMsg.style.display = 'none', 1500);
-                })
-                .catch(error => {
-                    console.error('Error saving:', error);
-                    autosaveMsg.innerText = 'Error saving ❌';
-                });
-            }, 1000);
-        }
-
-        titleInput.addEventListener('input', autosave);
-        contentTextarea.addEventListener('input', autosave);
-
-        // Save automatically when the user leaves the page
-        window.addEventListener('beforeunload', function () {
-            const data = JSON.stringify({
-                title: titleInput.value,
-                content: contentTextarea.value
-            });
-
-            navigator.sendBeacon(`/journals/${journalId}/autosave/`, new Blob([data], { type: 'application/json' }));
-        });
-
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-    </script>
-
+<script id="journal-data" type="application/json">{{ journal.id }}</script>
+<script src="{% static 'core/journalAutoSave.js' %}"></script>
 </body>
 </html>

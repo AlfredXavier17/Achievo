@@ -94,3 +94,22 @@ def autosave_journal(request, journal_id):
             return JsonResponse({'status': 'success'})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)})
+        
+@csrf_exempt
+def autosave_goal(request, goal_id):
+    if request.method == 'POST' and request.user.is_authenticated:
+        goal = get_object_or_404(Goal, id=goal_id, user=request.user)
+        data = json.loads(request.body)
+
+        title = data.get('title')
+        description = data.get('description')
+
+        if title is not None:
+            goal.title = title
+        if description is not None:
+            goal.description = description
+
+        goal.save()
+        return JsonResponse({'status': 'saved'})
+
+    return JsonResponse({'status': 'error'}, status=400)

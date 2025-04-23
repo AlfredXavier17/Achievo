@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ journal.title|default:"New Entry" }} – Journal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-dark text-light">
+
+    <div class="container mt-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <a href="{% url 'goal_detail' journal.goal.id %}" class="btn btn-outline-light">← Back to Goal</a>
+            <a href="{% url 'delete_journal' journal.id %}" class="btn btn-outline-danger">🗑️ Delete</a>
+        </div>
+
+        <input type="text" id="journal-title" class="form-control mb-3 fs-3" value="{{ journal.title }}" placeholder="Untitled" />
+        <small class="text-muted">{{ journal.created_at|date:"F j, Y – g:i A" }}</small>
+
+        <hr>
+
+        <textarea id="journal-content" class="form-control" rows="12" style="white-space: pre-wrap; line-height: 1.8;">{{ journal.content }}</textarea>
+        <small id="autosave-msg" class="text-muted mt-2 d-block" style="display: none;">Saving...</small>
+    </div>
+
+    <script>
+        const journalId = {{ journal.id }};
+        const titleInput = document.getElementById('journal-title');
+        const contentTextarea = document.getElementById('journal-content');
+        const autosaveMsg = document.getElementById('autosave-msg');
+
+        let timeoutId;
+
+        function autosave() {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+                autosaveMsg.style.display = 'inline';
+                fetch(`/journals/${journalId}/autosave/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        title: titleInput.value,
+                        content: contentTextarea.value
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    autosaveMsg.innerText = 'Saved ✅';
+                    setTimeout(() => autosaveMsg.style.display = 'none', 1500);
+                })
+                .catch(error => {
+                    console.error('Error saving:', error);
+                    autosaveMsg.innerText = 'Error saving ❌';
+                });
+            }, 1000);
+        }
+
+        titleInput.addEventListener('input', autosave);
+        contentTextarea.addEventListener('input', autosave);
+
+        // Save automatically when the user leaves the page
+        window.addEventListener('beforeunload', function () {
+            const data = JSON.stringify({
+                title: titleInput.value,
+                content: contentTextarea.value
+            });
+
+            navigator.sendBeacon(`/journals/${journalId}/autosave/`, new Blob([data], { type: 'application/json' }));
+        });
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+
+</body>
+</html>

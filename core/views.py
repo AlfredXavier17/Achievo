@@ -6,6 +6,8 @@ import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import login
 
 @login_required
 def home(request):
@@ -122,3 +124,26 @@ def delete_goal(request, goal_id):
         goal.delete()
         return redirect('home')  # or whatever your home view is called
     return redirect('goal_detail', goal_id=goal_id)
+
+
+
+def landing_page(request):
+    if request.user.is_authenticated:
+        return redirect('home')  # Redirect to goals dashboard
+    return render(request, 'landing.html')
+
+
+def register_view(request):
+    if request.user.is_authenticated:
+        return redirect('home')
+
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)  # log them in immediately
+            return redirect('home')
+    else:
+        form = UserCreationForm()
+    
+    return render(request, 'register.html', {'form': form})

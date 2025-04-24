@@ -113,3 +113,12 @@ def autosave_goal(request, goal_id):
         return JsonResponse({'status': 'saved'})
 
     return JsonResponse({'status': 'error'}, status=400)
+
+
+@login_required
+def delete_goal(request, goal_id):
+    goal = get_object_or_404(Goal, id=goal_id, user=request.user)
+    if request.method == 'POST':
+        goal.delete()
+        return redirect('home')  # or whatever your home view is called
+    return redirect('goal_detail', goal_id=goal_id)

@@ -11,5 +11,5 @@ urlpatterns = [
     path('journals/<int:journal_id>/edit/', views.edit_journal, name='edit_journal'),
     path('journals/<int:journal_id>/autosave/', views.autosave_journal, name='autosave_journal'),
     path('goals/<int:goal_id>/autosave/', views.autosave_goal, name='autosave_goal'),
-
+    path('goals/<int:goal_id>/delete/', views.delete_goal, name='delete_goal'),
 ]

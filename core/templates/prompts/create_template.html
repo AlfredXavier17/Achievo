@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+  <h1 class="mb-3"><i class="fa-regular fa-file-lines me-2"></i>Create New Prompt Template</h1>
+
+  <form method="POST">
+    {% csrf_token %}
+
+    <input type="text" name="title" class="form-control form-control-lg mb-4 bg-dark text-light border-secondary" placeholder="Template Title (e.g., Morning Reflection)" required>
+
+    <div class="position-relative">
+      <textarea name="content" id="template-content" class="form-control bg-dark text-light border-secondary" rows="10" placeholder="Write your prompt here..." required></textarea>
+    </div>
+
+    <div class="text-end mt-4">
+      <button type="submit" class="btn btn-primary">Save Template</button>
+    </div>
+  </form>
+</div>
+
+<!-- FontAwesome Icons -->
+<script src="https://kit.fontawesome.com/d47260456e.js" crossorigin="anonymous"></script>
+{% endblock %}

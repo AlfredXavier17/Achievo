@@ -19,3 +19,15 @@ class JournalEntry(models.Model):
 
     def __str__(self):
         return f"{self.title} – {self.created_at.strftime('%Y-%m-%d')}"
+    
+
+from django.contrib.auth.models import User
+from django.db import models
+
+class PromptTemplate(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    title = models.CharField(max_length=100)  # <-- Title field
+    content = models.TextField()  # <-- Big free text field
+
+    def __str__(self):
+        return self.title

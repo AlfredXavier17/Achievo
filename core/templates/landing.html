@@ -1,13 +1,91 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Welcome to Achievo</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-dark text-light text-center p-5">
-  <h1 class="display-4">Achievo 🧠</h1>
-  <p class="lead">A goal-based journaling app that helps you focus, reflect, and grow.</p>
-  <a href="/login" class="btn btn-primary m-2">Login</a>
-  <a href="/register" class="btn btn-outline-light m-2">Sign Up</a>
-</body>
-</html>
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="bg-dark text-light py-5">
+  <div class="container text-center">
+    <h1 class="display-4 mb-3">🎯 Achievo</h1>
+    <p class="lead mb-4">Set SMART goals and journal your progress every day. Use prebuilt templates or create your own to reflect on what you did—no percentages, just focus.</p>
+    <div class="d-flex justify-content-center gap-3">
+      <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg m-2" style="color: #fff; border-color: #fff;">Login</a>
+      <a href="/register" class="btn btn-primary btn-lg m-2" style="background-color: #007bff; color: #fff;">Sign Up</a>
+    </div>
+  </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5 bg-secondary text-light">
+  <div class="container">
+    <h2 class="text-center mb-5">What You Can Do with Achievo</h2>
+    <div class="row text-center">
+      <div class="col-md-4 mb-4">
+        <i class="fa-solid fa-check-circle fa-3x mb-3 text-primary" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.5);"></i>
+        <h3>Set SMART Goals</h3>
+        <p>Create goals like 'Run 5km in 30 days' with clear targets and deadlines.</p>
+      </div>
+      <div class="col-md-4 mb-4">
+        <i class="fa-solid fa-book fa-3x mb-3 text-primary" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.5);"></i>
+        <h3>Journal Every Day</h3>
+        <p>Write daily entries tied to your goals using templates to track your actions.</p>
+      </div>
+      <div class="col-md-4 mb-4">
+        <i class="fa-solid fa-pen fa-3x mb-3 text-primary" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.5);"></i>
+        <h3>Custom Templates</h3>
+        <p>Use prebuilt templates or design your own to guide your journaling.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SMART Goals Guide -->
+<section class="py-5 bg-dark text-light">
+  <div class="container">
+    <h2 class="text-center mb-5">What Are SMART Goals?</h2>
+    <p class="lead text-center mb-4">SMART stands for Specific, Measurable, Achievable, Relevant, Time-bound. For example, instead of 'Exercise,' set 'Run 5km in 30 days.' Studies (e.g., from the American Psychological Association) show that goal-setting with reflection boosts success by up to 25%.</p>
+    <!-- <p class="text-center">Achievo’s journaling helps you reflect daily, turning vague goals into actionable steps. <a href="/smart-goals-guide" class="text-primary">Learn More</a></p> -->
+  </div>
+</section>
+
+<!-- Post-Login Guide -->
+<section class="py-5 bg-secondary text-light">
+  <div class="container text-center">
+    <h2 class="mb-5">After You Sign Up</h2>
+    <div class="row">
+      <div class="col-md-4">
+        <h4>1. Log In</h4>
+        <p>Sign in to access your personal dashboard.</p>
+      </div>
+      <div class="col-md-4">
+        <h4>2. Set a SMART Goal</h4>
+        <p>Create a goal like 'Write 500 words daily for 2 weeks.'</p>
+      </div>
+      <div class="col-md-4">
+        <h4>3. Start Journaling</h4>
+        <p>Each day, write about your progress using a template.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5 bg-primary text-light">
+  <div class="container text-center">
+    <h2 class="mb-3">Ready to Get Started?</h2>
+    <p class="mb-4">Log in, set SMART goals, and journal your way to success.</p>
+    <a href="/register" class="btn btn-lg m-2" style="background-color: #fff; color: #007bff;">Sign Up Now</a>
+
+  </div>
+</section>
+
+<footer class="py-4 bg-dark text-light">
+  <div class="container d-flex justify-content-center align-items-center" style="min-height: 60px;">
+    <p class="mb-0 text-center">
+      © 2025 Achievo. All rights reserved. 
+      <a href="{% url 'privacy_policy' %}" class="text-light text-decoration-underline">Privacy Policy</a>
+    </p>
+  </div>
+</footer>
+
+
+{% endblock %}

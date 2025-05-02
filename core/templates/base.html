@@ -12,6 +12,7 @@
       color: white;
       padding: 40px;
     }
+
     input, textarea, select {
       width: 100%;
       padding: 10px;
@@ -21,7 +22,10 @@
       color: white;
       border: 1px solid #555;
     }
-    button, .btn {
+
+    /* Apply custom blue style only to plain buttons, avoid overriding Bootstrap's variant buttons */
+    button:not(.btn-danger):not(.btn-secondary):not(.btn-outline-light):not(.btn-outline-danger),
+    .btn:not(.btn-danger):not(.btn-secondary):not(.btn-outline-light):not(.btn-outline-danger) {
       background-color: #007bff;
       color: white;
       padding: 8px 16px;
@@ -30,9 +34,19 @@
       border-radius: 5px;
       cursor: pointer;
     }
-    button:hover, .btn:hover {
+
+    button:not(.btn-danger):not(.btn-secondary):not(.btn-outline-light):not(.btn-outline-danger):hover,
+    .btn:not(.btn-danger):not(.btn-secondary):not(.btn-outline-light):not(.btn-outline-danger):hover {
       background-color: #0056b3;
     }
+
+
+  .btn-close-white {
+  filter: invert(1);
+  opacity: 1;
+  scale: 1.2;
+}
+
   </style>
 </head>
 <body>
@@ -40,6 +54,35 @@
   {% endblock %}
 
   <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+   <!-- Google Analytics (replace YOUR-ID with your real GA ID later) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=YOUR-GA-ID"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'YOUR-GA-ID');
+</script>
+
+<!-- Cookie Banner -->
+<div id="cookie-banner" style="display:none; position:fixed; bottom:0; left:0; width:100%; background:#222; color:#fff; padding:15px; text-align:center; z-index:1000;">
+  This website uses cookies to ensure you get the best experience.
+  <button onclick="acceptCookies()" style="margin-left:10px; padding:5px 10px;">Got it</button>
+</div>
+
+<script>
+  function acceptCookies() {
+    localStorage.setItem('cookiesAccepted', 'true');
+    document.getElementById('cookie-banner').style.display = 'none';
+  }
+
+  window.onload = function() {
+    if (!localStorage.getItem('cookiesAccepted')) {
+      document.getElementById('cookie-banner').style.display = 'block';
+    }
+  };
+</script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 </body>
 </html>

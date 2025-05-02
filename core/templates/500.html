@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="text-align: center; padding: 4rem;">
+    <h1 style="font-size: 3rem;">500 – Server Error</h1>
+    <p>Something went wrong on our end. We're working on it.</p>
+    <a href="{% url 'landing_page' %}">Back to Home</a>
+</div>
+{% endblock %}

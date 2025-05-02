@@ -1,133 +1,99 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container mt-5">
+<div class="container">
   <a href="{% url 'goal_detail' goal.id %}" class="btn btn-outline-light mb-4">← Back to Goal</a>
 
-  <h2 class="mb-3">📝 New Journal Entry for <strong>{{ goal.title }}</strong></h2>
+  <h1 class="mb-4"><i class="fa-regular fa-pen-to-square me-2"></i>Add Journal Entry for <strong>{{ goal.title }}</strong></h1>
 
   <form method="POST" action="{% url 'add_journal' goal.id %}">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary mt-3" id="save-button">Save Entry</button>
+    <input type="text" name="title"
+           class="form-control form-control-lg mb-4 bg-dark text-light border-secondary"
+           placeholder="Enter a short title"
+           value="{{ form.title.value|default_if_none:'' }}" required>
+
+    <textarea name="content"
+              class="form-control bg-dark text-light border-secondary"
+              rows="12"
+              placeholder="Write your journal entry..." required>{{ form.content.value|default_if_none:'' }}</textarea>
+
+    <div class="text-end mt-4">
+      <button type="submit" class="btn btn-primary">Save Entry</button>
+    </div>
   </form>
 
-  <!-- ✅ Template Selector -->
-  <div id="templateSelector" class="mt-5">
-    <h3 class="mb-3">Choose a Template:</h3>
+  <!-- ✅ Templates -->
+  <div class="mt-5 pt-4 border-top border-secondary">
+    <h4>Choose a Template:</h4>
 
     <!-- Default Template -->
-    <div class="template-block">
-      <div class="d-flex align-items-center justify-content-between py-2">
-        <a href="#" class="template-link text-decoration-none text-light"
-           data-content="{{ default_template.content|escapejs }}">
-          <i class="fa-regular fa-file-lines me-2"></i>{{ default_template.title }}
-        </a>
-      </div>
-    </div>
+<div class="card template-card bg-dark border-secondary mb-3"
+data-content="{{ default_template.content|escapejs }}">
+<div class="card-body d-flex justify-content-between align-items-center">
+<div class="d-flex align-items-center text-light">
+ <i class="fa-regular fa-file-lines me-2 fa-lg"></i>
+ <span>{{ default_template.title }}</span>
+</div>
+</div>
+</div>
 
-    <!-- User Templates -->
-    {% for template in templates %}
-    <div class="template-block">
-      <div class="d-flex align-items-center justify-content-between py-2">
-        <a href="#" class="template-link text-decoration-none text-light"
-           data-content="{{ template.content|escapejs }}">
-          <i class="fa-regular fa-file-lines me-2"></i>{{ template.title }}
-        </a>
-        <div class="d-flex align-items-center gap-2">
-          <a href="{% url 'edit_prompt_template' template.id %}" class="text-light">
-            <i class="fa-regular fa-pen-to-square"></i>
-          </a>
-          <a href="#" class="text-danger" data-bs-toggle="modal" data-bs-target="#deleteTemplateModal-{{ template.id }}">
-            <i class="fa-solid fa-trash"></i>
-          </a>
-        </div>
-      </div>
-    </div>
+<!-- User Templates -->
+{% for template in templates %}
+<div class="card template-card bg-dark border-secondary mb-3"
+data-content="{{ template.content|escapejs }}">
+<div class="card-body d-flex justify-content-between align-items-center">
+<div class="d-flex align-items-center text-light">
+ <i class="fa-regular fa-file-lines me-2 fa-lg"></i>
+ <span>{{ template.title }}</span>
+</div>
 
-    <!-- Delete Modal -->
-    <div class="modal fade" id="deleteTemplateModal-{{ template.id }}" tabindex="-1"
-         aria-labelledby="deleteTemplateModalLabel-{{ template.id }}" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content bg-dark text-light border border-danger">
-          <div class="modal-header">
-            <h5 class="modal-title" id="deleteTemplateModalLabel-{{ template.id }}">Delete Template?</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            Are you sure you want to delete the template "{{ template.title|escape }}"?
-          </div>
-          <div class="modal-footer">
-            <form method="POST" action="{% url 'delete_prompt_template' template.id %}?goal_id={{ goal.id }}">
-              {% csrf_token %}
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-              <button type="submit" class="btn btn-danger">Yes, delete</button>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-    {% endfor %}
-
+<div>
+ <a href="{% url 'edit_prompt_template' template.id %}" class="text-light me-2" title="Edit">
+   <i class="fa-regular fa-pen-to-square fa-lg"></i>
+ </a>
+ <a href="#" class="text-danger" data-bs-toggle="modal" data-bs-target="#deleteTemplateModal-{{ template.id }}" title="Delete">
+   <i class="fa-solid fa-trash fa-lg"></i>
+ </a>
+</div>
+</div>
+</div>
+{% endfor %}
+    
     <div class="text-center mt-4">
-      <a href="{% url 'create_template' %}" class="btn btn-primary">+ New Template</a>
+      <a href="{% url 'create_template' %}" class="btn btn-outline-light btn-lg">+ New Template</a>
     </div>
   </div>
 </div>
 
-<!-- ✅ JS to handle template click + hiding -->
 <script>
-  const contentBox = document.getElementById('id_content');
-  const templateLinks = document.querySelectorAll('.template-link');
-  const templateSelector = document.getElementById('templateSelector');
+  const contentBox = document.querySelector('textarea[name="content"]');
+  const templateCards = document.querySelectorAll('.template-card');
 
-  if (contentBox && templateSelector) {
-    // Hide when user types
-    contentBox.addEventListener('input', () => {
-      templateSelector.classList.add('d-none');
-    });
+  templateCards.forEach(card => {
+    card.addEventListener('click', function (e) {
+      // prevent clicking edit/delete icons from triggering paste
+      if (e.target.closest('a')) return;
 
-    // Template click behavior
-    templateLinks.forEach(link => {
-      link.addEventListener('click', function (e) {
-        e.preventDefault();
-        const content = this.dataset.content.replace(/\\u000A/g, '\n\n\n\n');
-        contentBox.value = content;
-        contentBox.focus();
-        templateSelector.classList.add('d-none');
-      });
+      const content = this.dataset.content.replace(/\\u000A/g, '\n\n\n');
+      contentBox.value = content;
+      contentBox.focus();
     });
-  }
+  });
 </script>
 
-<!-- ✅ Clean styling -->
+
+
 <style>
-  .template-link {
-    font-size: 1.2rem;
-    display: block;
+  .template-card {
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out, background-color 0.2s ease-in-out;
   }
 
-  .template-link i,
-  .d-flex.align-items-center.gap-2 a i {
-    font-size: 1.2rem;
-  }
-
-  #templateSelector {
-    border-top: 1px solid #555;
-    margin-top: 2rem;
-    padding-top: 1rem;
-  }
-
-  .template-block {
-    background-color: #1a1a1a;
-    padding: 1rem;
-    border-radius: 0.5rem;
-    margin-bottom: 1rem;
-  }
-
-  #save-button {
-    z-index: 10;
-    position: relative;
+  .template-card:hover {
+    transform: scale(1.02);
+    background-color: #2a2a2a;
   }
 </style>
+
 {% endblock %}

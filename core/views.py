@@ -149,7 +149,7 @@ def register_view(request):
             return redirect('home')
     else:
         form = UserCreationForm()
-    return render(request, 'register.html', {'form': form})
+    return render(request, 'registration/register.html', {'form': form})
 
 # TEMPLATES (PROMPTS)
 

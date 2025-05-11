@@ -9,8 +9,13 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
+import os
 
 from pathlib import Path
+
+
+from dotenv import load_dotenv  # ← Add this
+load_dotenv()  # ← Add this
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,8 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-5wy3239ikwp#f7d#c1tnp-#ezpc4ez*1$4qbk$x6mey654ti=q'
-
+SECRET_KEY = os.getenv('SECRET_KEY')  # ← Loads from .env
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
@@ -55,7 +59,7 @@ ROOT_URLCONF = 'achievo.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'core/templates')],  # ← Add this line
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -70,16 +74,12 @@ TEMPLATES = [
 WSGI_APPLICATION = 'achievo.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',  # Single-file database
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -138,3 +138,12 @@ PASSWORD_HASHERS = [
 ]
 
 
+
+# ========================
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # Send real emails
+EMAIL_HOST = 'smtp.gmail.com'  # Gmail's SMTP server
+EMAIL_PORT = 587  # TLS port
+EMAIL_USE_TLS = True  # Encryption ON
+EMAIL_HOST_USER = 'alfredxavierct@gmail.com'  # Your Gmail
+EMAIL_HOST_PASSWORD = os.getenv('GMAIL_APP_PASSWORD') 
+DEFAULT_FROM_EMAIL = 'Achievo <alfredxavierct@gmail.com>'  # Shows as "Achievo" in inbox

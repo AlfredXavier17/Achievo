@@ -1,12 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .forms import GoalForm, JournalEntryForm
+from .forms import GoalForm, JournalEntryForm, CustomUserCreationForm, LoginForm
 from .models import Goal, JournalEntry, PromptTemplate
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 import json
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth import login
+from django.contrib.auth import login, authenticate
 from django.db import transaction, IntegrityError
 
 DEFAULT_TEMPLATE = {
@@ -137,18 +137,32 @@ def landing_page(request):
         return redirect('home')
     return render(request, 'landing.html')
 
+def login_view(request):
+    if request.user.is_authenticated:
+        return redirect('home')
+
+    if request.method == 'POST':
+        form = LoginForm(data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            return redirect('home')
+    else:
+        form = LoginForm()
+    return render(request, 'registration/login.html', {'form': form})  # Updated to 'registration/login.html'
+
 def register_view(request):
     if request.user.is_authenticated:
         return redirect('home')
 
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)
             return redirect('home')
     else:
-        form = UserCreationForm()
+        form = CustomUserCreationForm()
     return render(request, 'registration/register.html', {'form': form})
 
 # TEMPLATES (PROMPTS)
@@ -159,7 +173,6 @@ def create_prompt_template(request):
         title = request.POST.get('title')
         content = request.POST.get('content')
 
-        # Truncate title to fit max_length=100 as defined in the model
         if len(title) > 100:
             title = title[:100]
             print(f"Title truncated to 100 characters: {title}")
@@ -196,10 +209,9 @@ def edit_prompt_template(request, template_id):
         template.title = title
         template.content = content
         template.save()
-        return redirect('home')  # Change this to 'home'
+        return redirect('home')
 
     return render(request, 'prompts/edit_template.html', {'template': template})
-
 
 @login_required
 @transaction.atomic
@@ -210,13 +222,12 @@ def delete_prompt_template(request, template_id):
     print(f"Template found: {template.title}")
     print(f"Template title length: {len(template.title)}")
     print(f"Template user: {template.user.username}")
-    goal_id = request.GET.get('goal_id', 1)  # Get goal_id from query parameter, default to 1
+    goal_id = request.GET.get('goal_id', 1)
 
     if request.method == 'POST':
         try:
             template.delete()
             print(f"Template {template.title} deleted successfully")
-            # Verify deletion
             exists = PromptTemplate.objects.filter(id=template_id, user=request.user).exists()
             print(f"Template still exists after deletion: {exists}")
         except IntegrityError as e:
@@ -227,3 +238,26 @@ def delete_prompt_template(request, template_id):
 
     print("Redirecting without deletion due to non-POST request")
     return redirect('add_journal', goal_id=goal_id)
+
+
+from django.contrib.auth.views import (
+    PasswordResetView,
+    PasswordResetDoneView,
+    PasswordResetConfirmView,
+    PasswordResetCompleteView
+)
+
+class AchievoPasswordResetView(PasswordResetView):
+    template_name = 'registration/password_reset_form.html'
+    email_template_name = 'registration/password_reset_email.html'
+    success_url = '/password_reset/done/'
+
+class AchievoPasswordResetDoneView(PasswordResetDoneView):
+    template_name = 'registration/password_reset_done.html'
+
+class AchievoPasswordResetConfirmView(PasswordResetConfirmView):
+    template_name = 'registration/password_reset_confirm.html'
+    success_url = '/reset/done/'
+
+class AchievoPasswordResetCompleteView(PasswordResetCompleteView):
+    template_name = 'registration/password_reset_complete.html'

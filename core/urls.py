@@ -1,7 +1,16 @@
-from . import views
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from django.views.generic import TemplateView
+from . import views
+from .forms import CustomPasswordResetForm
+
+
+from .views import (
+    AchievoPasswordResetView,
+    AchievoPasswordResetDoneView,
+    AchievoPasswordResetConfirmView,
+    AchievoPasswordResetCompleteView
+)
 
 
 urlpatterns = [
@@ -17,12 +26,18 @@ urlpatterns = [
     path('goals/<int:goal_id>/autosave/', views.autosave_goal, name='autosave_goal'),
     path('goals/<int:goal_id>/delete/', views.delete_goal, name='delete_goal'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('login/', views.login_view, name='login'),
     path('register/', views.register_view, name='register'),
-
-    # PROMPTS (only what’s needed)
+    # PROMPTS
     path('prompts/new/', views.create_prompt_template, name='create_template'),
     path('prompts/<int:template_id>/json/', views.get_template_content, name='get_template_content'),
     path('prompts/<int:template_id>/edit/', views.edit_prompt_template, name='edit_prompt_template'),
     path('prompts/<int:template_id>/delete/', views.delete_prompt_template, name='delete_prompt_template'),
-    path('privacy-policy/', TemplateView.as_view(template_name="privacy_policy.html"), name='privacy_policy'),
+    # PASSWORD RESET
+    # Password Reset URLs
+    path('password_reset/', AchievoPasswordResetView.as_view(), name='password_reset'),
+    path('password_reset/done/', AchievoPasswordResetDoneView.as_view(), name='password_reset_done'),
+    path('reset/<uidb64>/<token>/', AchievoPasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('reset/done/', AchievoPasswordResetCompleteView.as_view(), name='password_reset_complete'),
+    path('privacy-policy/', TemplateView.as_view(template_name='privacy_policy.html'), name='privacy_policy'),
 ]

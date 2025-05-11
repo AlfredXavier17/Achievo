@@ -3,6 +3,8 @@
 __pycache__/
 db.sqlite3
 null
+/staticfiles/
+/static/
 
 # Virtual env
 venv/

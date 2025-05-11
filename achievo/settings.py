@@ -28,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY')  # ← Loads from .env
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.onrender.com'] 
 
 
 # Application definition
@@ -52,6 +52,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'achievo.urls'
@@ -162,3 +163,7 @@ EMAIL_USE_TLS = True  # Encryption ON
 EMAIL_HOST_USER = 'alfredxavierct@gmail.com'  # Your Gmail
 EMAIL_HOST_PASSWORD = os.getenv('GMAIL_APP_PASSWORD') 
 DEFAULT_FROM_EMAIL = 'Achievo <alfredxavierct@gmail.com>'  # Shows as "Achievo" in inbox
+
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # For collectstatic
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'# Optimizes static files

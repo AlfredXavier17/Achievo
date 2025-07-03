@@ -18,21 +18,8 @@
 
       <form method="post" novalidate>
         {% csrf_token %}
-        
-        <!-- Username Field -->
-        <div class="mb-3">
-          <label class="form-label text-light">Username</label>
-          {{ form.username|add_class:"form-control bg-dark text-light border-secondary" }}
-          {% if form.username.errors %}
-            <div class="text-danger small">
-              {% for error in form.username.errors %}
-                <div>{{ error }}</div>
-              {% endfor %}
-            </div>
-          {% endif %}
-        </div>
 
-        <!-- Email Field (New Addition) -->
+        <!-- Email -->
         <div class="mb-3">
           <label class="form-label text-light">Email</label>
           {{ form.email|add_class:"form-control bg-dark text-light border-secondary" }}
@@ -45,13 +32,12 @@
           {% endif %}
         </div>
 
-        <!-- Password1 Field with Toggle -->
+        <!-- Password1 -->
         <div class="mb-3 position-relative">
           <label class="form-label text-light">Password</label>
           <div class="position-relative">
             {{ form.password1|add_class:"form-control bg-dark text-light border-secondary pe-5" }}
-            <span class="password-toggle position-absolute end-0 top-50 translate-middle-y me-3" 
-                  style="cursor: pointer; transform: translateY(-50%) !important;">
+            <span class="password-toggle position-absolute end-0 top-50 translate-middle-y me-3" style="cursor: pointer;">
               <i class="far fa-eye-slash text-secondary"></i>
             </span>
           </div>
@@ -64,13 +50,12 @@
           {% endif %}
         </div>
 
-        <!-- Password2 Field with Toggle -->
+        <!-- Password2 -->
         <div class="mb-3 position-relative">
-          <label class="form-label text-light">Password Confirmation</label>
+          <label class="form-label text-light">Confirm Password</label>
           <div class="position-relative">
             {{ form.password2|add_class:"form-control bg-dark text-light border-secondary pe-5" }}
-            <span class="password-toggle position-absolute end-0 top-50 translate-middle-y me-3" 
-                  style="cursor: pointer; transform: translateY(-50%) !important;">
+            <span class="password-toggle position-absolute end-0 top-50 translate-middle-y me-3" style="cursor: pointer;">
               <i class="far fa-eye-slash text-secondary"></i>
             </span>
           </div>
@@ -97,12 +82,10 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   const passwordToggles = document.querySelectorAll('.password-toggle');
-  
   passwordToggles.forEach(toggle => {
     toggle.addEventListener('click', function() {
       const input = this.parentElement.querySelector('input');
       const icon = this.querySelector('i');
-      
       if (input.type === 'password') {
         input.type = 'text';
         icon.classList.replace('fa-eye-slash', 'fa-eye');

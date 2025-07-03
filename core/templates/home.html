@@ -1,10 +1,13 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block content %}
 <div class="container">
 
   <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
-    <h2 class="fw-bold">🎯 Achievo</h2>
+    <h2 class="fw-bold d-flex align-items-center">
+      <img src="{% static 'images/pencil.png' %}" alt="Pencil" style="width: 40px; height: 40px; margin-right: 12px;">
+      MilestoneMemo
+    </h2>
     <div class="d-flex gap-3">
       <a href="{% url 'create_goal' %}" class="btn btn-success">+ New Goal</a>
       <form method="POST" action="{% url 'logout' %}">

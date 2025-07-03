@@ -5,9 +5,30 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 import json
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login as auth_login, authenticate
 from django.db import transaction, IntegrityError
+from django.contrib.auth.views import (
+    PasswordResetView,
+    PasswordResetDoneView,
+    PasswordResetConfirmView,
+    PasswordResetCompleteView
+)
+from django.contrib.auth import login
+from django.contrib import messages
+from django.utils.http import urlsafe_base64_decode
+from django.utils.encoding import force_str
+from django.shortcuts import redirect,render
+from .tokens import email_verification_token
+from .models import User
+from django.contrib.auth import login as auth_login
+from django.contrib.auth.tokens import default_token_generator
+from .tokens import email_verification_token
+from django.contrib.auth import get_user_model
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+User = get_user_model()
+
+
 
 DEFAULT_TEMPLATE = {
     "title": "Daily Reflection",
@@ -45,13 +66,13 @@ def add_journal_entry(request, goal_id):
     goal = get_object_or_404(Goal, id=goal_id, user=request.user)
 
     if request.method == 'POST':
-        print("✅ FORM SUBMIT DETECTED")
         form = JournalEntryForm(request.POST)
         if form.is_valid():
-            journal = form.save(commit=False)
-            journal.goal = goal
-            journal.user = request.user
-            journal.save()
+            with transaction.atomic():
+                journal = form.save(commit=False)
+                journal.goal = goal
+                journal.user = request.user
+                journal.save()
             return redirect('goal_detail', goal_id=goal.id)
     else:
         form = JournalEntryForm()
@@ -142,14 +163,22 @@ def login_view(request):
         return redirect('home')
 
     if request.method == 'POST':
-        form = LoginForm(data=request.POST)
+        form = LoginForm(request=request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
-            login(request, user)
+
+            if not user.is_email_verified:
+                messages.error(request, "Please verify your email before logging in.")
+                return render(request, 'registration/login.html', {'form': form})
+
+            auth_login(request, user)
             return redirect('home')
-    else:
-        form = LoginForm()
-    return render(request, 'registration/login.html', {'form': form})  # Updated to 'registration/login.html'
+        else:
+            return render(request, 'registration/login.html', {'form': form})
+
+    form = LoginForm(request=request)
+    return render(request, 'registration/login.html', {'form': form})
+
 
 def register_view(request):
     if request.user.is_authenticated:
@@ -158,9 +187,26 @@ def register_view(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect('home')
+            try:
+                with transaction.atomic():
+                    user = form.save(commit=False)
+                    user.email = user.email.lower().strip()
+                    user.is_active = False  # ⛔️ Make sure user is inactive until verified
+                    user.save()
+
+                    # ✅ Send verification email with uidb64
+                    from .tokens import email_verification_token
+                    from .utils import send_verification_email
+
+                    uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+                    token = email_verification_token.make_token(user)
+                    domain = request.get_host()
+                    send_verification_email(user, uidb64, token, domain)
+
+                    # 🚫 Do not auto-login
+                    return render(request, 'registration/email_verification_sent.html', {'email': user.email})
+            except IntegrityError:
+                form.add_error('email', 'This email is already registered.')
     else:
         form = CustomUserCreationForm()
     return render(request, 'registration/register.html', {'form': form})
@@ -170,12 +216,8 @@ def register_view(request):
 @login_required
 def create_prompt_template(request):
     if request.method == 'POST':
-        title = request.POST.get('title')
-        content = request.POST.get('content')
-
-        if len(title) > 100:
-            title = title[:100]
-            print(f"Title truncated to 100 characters: {title}")
+        title = request.POST.get('title', '')[:100]  # Truncate to 100 chars
+        content = request.POST.get('content', '')
 
         PromptTemplate.objects.create(
             title=title,
@@ -199,12 +241,8 @@ def edit_prompt_template(request, template_id):
     template = get_object_or_404(PromptTemplate, id=template_id, user=request.user)
 
     if request.method == 'POST':
-        title = request.POST.get('title')
-        content = request.POST.get('content')
-
-        if len(title) > 100:
-            title = title[:100]
-            print(f"Title truncated to 100 characters: {title}")
+        title = request.POST.get('title', '')[:100]  # Truncate to 100 chars
+        content = request.POST.get('content', '')
 
         template.title = title
         template.content = content
@@ -216,36 +254,15 @@ def edit_prompt_template(request, template_id):
 @login_required
 @transaction.atomic
 def delete_prompt_template(request, template_id):
-    print(f"Request method: {request.method}")
-    print(f"Attempting to delete template with ID: {template_id}")
     template = get_object_or_404(PromptTemplate, id=template_id, user=request.user)
-    print(f"Template found: {template.title}")
-    print(f"Template title length: {len(template.title)}")
-    print(f"Template user: {template.user.username}")
     goal_id = request.GET.get('goal_id', 1)
 
     if request.method == 'POST':
-        try:
-            template.delete()
-            print(f"Template {template.title} deleted successfully")
-            exists = PromptTemplate.objects.filter(id=template_id, user=request.user).exists()
-            print(f"Template still exists after deletion: {exists}")
-        except IntegrityError as e:
-            print(f"IntegrityError during deletion: {str(e)}")
-        except Exception as e:
-            print(f"Error deleting template: {str(e)}")
+        template.delete()
         return redirect('add_journal', goal_id=goal_id)
-
-    print("Redirecting without deletion due to non-POST request")
     return redirect('add_journal', goal_id=goal_id)
 
-
-from django.contrib.auth.views import (
-    PasswordResetView,
-    PasswordResetDoneView,
-    PasswordResetConfirmView,
-    PasswordResetCompleteView
-)
+# PASSWORD RESET VIEWS
 
 class AchievoPasswordResetView(PasswordResetView):
     template_name = 'registration/password_reset_form.html'
@@ -261,3 +278,42 @@ class AchievoPasswordResetConfirmView(PasswordResetConfirmView):
 
 class AchievoPasswordResetCompleteView(PasswordResetCompleteView):
     template_name = 'registration/password_reset_complete.html'
+
+
+def verify_email(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (User.DoesNotExist, ValueError, TypeError, OverflowError):
+        user = None
+
+    if user is not None and email_verification_token.check_token(user, token):
+        user.is_email_verified = True
+        user.save()
+        login(request, user)
+        messages.success(request, "Your email has been verified! 🎉")
+        return redirect('home')
+    else:
+        messages.error(request, "Invalid or expired verification link.")
+        return redirect('landing_page')
+    
+
+def verify_email_view(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+
+        if email_verification_token.check_token(user, token):
+            user.is_email_verified = True
+            user.is_active = True
+            user.save()
+            auth_login(request, user)
+            return render(request, 'registration/email_verified.html')
+        else:
+            return render(request, 'registration/email_invalid.html')
+
+    except User.DoesNotExist:
+        return render(request, 'registration/email_invalid.html')
+
+def terms(request):
+    return render(request, 'terms.html')

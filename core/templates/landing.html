@@ -1,15 +1,17 @@
 {% extends 'base.html' %}
 {% load static %}
-
 {% block content %}
 <!-- Hero Section -->
 <section class="bg-dark text-light py-5">
   <div class="container text-center">
-    <h1 class="display-4 mb-3">🎯 Achievo</h1>
-    <p class="lead mb-4">Set SMART goals and journal your progress every day. Use prebuilt templates or create your own to reflect on what you did—no percentages, just focus.</p>
+    <h1 class="display-4 mb-3 d-flex justify-content-center align-items-center gap-3">
+  <img src="{% static 'images/pencil.png' %}" alt="MilestoneMemo Icon" style="height: 2.5rem;">
+  MilestoneMemo
+</h1>
+    <p class="lead mb-4">Set SMART goals and track your progress with daily journaling. Use templates or write freely—reflect, grow, repeat.</p>
     <div class="d-flex justify-content-center gap-3">
       <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg m-2" style="color: #fff; border-color: #fff;">Login</a>
-      <a href="/register" class="btn btn-primary btn-lg m-2" style="background-color: #007bff; color: #fff;">Sign Up</a>
+      <a href="{% url 'register' %}" class="btn btn-primary btn-lg m-2" style="background-color: #007bff; color: #fff;">Sign Up</a>
     </div>
   </div>
 </section>
@@ -17,7 +19,7 @@
 <!-- Features Section -->
 <section class="py-5 bg-secondary text-light">
   <div class="container">
-    <h2 class="text-center mb-5">What You Can Do with Achievo</h2>
+    <h2 class="text-center mb-5">What You Can Do with MilestoneMemo</h2>
     <div class="row text-center">
       <div class="col-md-4 mb-4">
         <i class="fa-solid fa-check-circle fa-3x mb-3 text-primary" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.5);"></i>
@@ -43,7 +45,6 @@
   <div class="container">
     <h2 class="text-center mb-5">What Are SMART Goals?</h2>
     <p class="lead text-center mb-4">SMART stands for Specific, Measurable, Achievable, Relevant, Time-bound. For example, instead of 'Exercise,' set 'Run 5km in 30 days.' Studies (e.g., from the American Psychological Association) show that goal-setting with reflection boosts success by up to 25%.</p>
-    <!-- <p class="text-center">Achievo’s journaling helps you reflect daily, turning vague goals into actionable steps. <a href="/smart-goals-guide" class="text-primary">Learn More</a></p> -->
   </div>
 </section>
 
@@ -73,19 +74,17 @@
   <div class="container text-center">
     <h2 class="mb-3">Ready to Get Started?</h2>
     <p class="mb-4">Log in, set SMART goals, and journal your way to success.</p>
-    <a href="/register" class="btn btn-lg m-2" style="background-color: #fff; color: #007bff;">Sign Up Now</a>
-
+    <a href="{% url 'register' %}" class="btn btn-lg m-2" style="background-color: #fff; color: #007bff;">Sign Up Now</a>
   </div>
 </section>
 
 <footer class="py-4 bg-dark text-light">
   <div class="container d-flex justify-content-center align-items-center" style="min-height: 60px;">
     <p class="mb-0 text-center">
-      © 2025 Achievo. All rights reserved. 
-      <a href="{% url 'privacy_policy' %}" class="text-light text-decoration-underline">Privacy Policy</a>
+      © 2025 MilestoneMemo. All rights reserved.
+      <a href="{% url 'privacy_policy' %}" class="text-light text-decoration-underline">Privacy Policy</a> |
+      <a href="{% url 'terms' %}" class="text-light text-decoration-underline">Terms</a>
     </p>
   </div>
 </footer>
-
-
 {% endblock %}

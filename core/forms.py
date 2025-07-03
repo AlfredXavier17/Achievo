@@ -1,12 +1,18 @@
 from django import forms
+from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm, PasswordResetForm
+from django.contrib.auth import authenticate
+from django.core.exceptions import ValidationError
 from .models import Goal, JournalEntry
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm, PasswordResetForm  # Add PasswordResetForm
-from django.contrib.auth.models import User
+
+User = get_user_model()
+
 
 class GoalForm(forms.ModelForm):
     class Meta:
         model = Goal
         fields = ['title', 'description']
+
 
 class JournalEntryForm(forms.ModelForm):
     class Meta:
@@ -25,11 +31,13 @@ class JournalEntryForm(forms.ModelForm):
             'placeholder': 'Enter a short title, e.g. "Gym Check-In"'
         })
 
+
 class LoginForm(AuthenticationForm):
     username = forms.CharField(
+        label="Email",
         widget=forms.TextInput(attrs={
             'class': 'form-control bg-dark text-light border-secondary',
-            'placeholder': 'Username'
+            'placeholder': 'Your email address'
         })
     )
     password = forms.CharField(
@@ -39,18 +47,43 @@ class LoginForm(AuthenticationForm):
         })
     )
 
+    def clean(self):
+        email = self.cleaned_data.get('username')
+        password = self.cleaned_data.get('password')
+
+        if email and password:
+            email = email.lower().strip()
+            user = authenticate(
+                request=self.request,
+                email=email,
+                password=password
+            )
+
+            if user is None:
+                raise ValidationError("Invalid email or password. Please try again.")
+
+            # ✅ This is the new check to prevent login if email not verified
+            if not user.is_active:
+                raise ValidationError("Please confirm your email before logging in.")
+
+            self.user_cache = user
+
+        return self.cleaned_data
+
+
 class CustomUserCreationForm(UserCreationForm):
     email = forms.EmailField(
         required=True,
         widget=forms.EmailInput(attrs={
             'class': 'form-control bg-dark text-light border-secondary',
             'placeholder': 'Your email address'
-        })
+        }),
+        help_text="We'll never share your email with anyone."
     )
 
     class Meta:
         model = User
-        fields = ("username", "email", "password1", "password2")
+        fields = ("email", "password1", "password2")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -62,33 +95,31 @@ class CustomUserCreationForm(UserCreationForm):
             'class': 'form-control bg-dark text-light border-secondary',
             'placeholder': 'Confirm password'
         })
-        self.fields['username'].widget.attrs.update({
-            'class': 'form-control bg-dark text-light border-secondary',
-            'placeholder': 'Choose a username'
-        })
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email').lower().strip()
+        if User.objects.filter(email__iexact=email).exists():
+            raise ValidationError("This email is already registered.")
+        return email
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.email = self.cleaned_data["email"].strip().lower()
+        user.email = self.cleaned_data["email"].lower().strip()
         if commit:
             user.save()
         return user
 
-# Add CustomPasswordResetForm to require username and email match
+
 class CustomPasswordResetForm(PasswordResetForm):
-    username = forms.CharField(max_length=150, required=True)
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control bg-dark text-light border-secondary',
+            'placeholder': 'Your email address'
+        })
+    )
 
-    def clean(self):
-        cleaned_data = super().clean()
-        email = cleaned_data.get('email')
-        username = cleaned_data.get('username')
-
-        if email and username:
-            try:
-                user = User.objects.get(username=username)
-                if user.email != email:
-                    raise forms.ValidationError("The username and email do not match.")
-            except User.DoesNotExist:
-                # Silently fail to prevent username enumeration
-                pass
-        return cleaned_data
+    def clean_email(self):
+        email = self.cleaned_data.get('email').lower().strip()
+        if not User.objects.filter(email__iexact=email).exists():
+            raise ValidationError("No account found with this email.")
+        return email

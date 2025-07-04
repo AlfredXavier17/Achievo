@@ -15,9 +15,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY')  # ← Loads from .env
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True if 'RENDER' not in os.environ else False  # ← Set to False in production
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.onrender.com', 'milestonememo.com', 'www.milestonememo.com']
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
+
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
+
 
 
 
@@ -152,16 +153,15 @@ PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
 ]
 
-
-
-# ========================
+# Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.zohocloud.ca'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'info@milestonememo.com'
-EMAIL_HOST_PASSWORD = '3yxr9HcqYYED'
-DEFAULT_FROM_EMAIL = 'MilestoneMemo <info@milestonememo.com>'
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'webmaster@localhost')
+
 
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # For collectstatic
@@ -169,7 +169,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'#
 
 
 
-# Auth Backends (add this too)
+
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend'
 ]
